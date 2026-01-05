@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "basic": {
+    "vendor": "Cisco NX-OS",
+    "hostname": "nxos-dc-leaf01",
+    "domain": "dc.example.com",
+    "enable_secret": "Nexus9kPass!",
+    "dns_servers": "8.8.8.8, 8.8.4.4",
+    "ntp_servers": "pool.ntp.org"
+  },
+  "interfaces": [
+    {
+      "type": "Ethernet",
+      "number": "1/1",
+      "description": "Uplink to Spine-01",
+      "ip": "10.0.1.1",
+      "mask": "255.255.255.254"
+    },
+    {
+      "type": "Ethernet",
+      "number": "1/2",
+      "description": "Uplink to Spine-02",
+      "ip": "10.0.1.3",
+      "mask": "255.255.255.254"
+    },
+    {
+      "type": "Ethernet",
+      "number": "1/10",
+      "description": "Server-01 Connection",
+      "ip": "",
+      "mask": "",
+      "access_vlan": "100"
+    },
+    {
+      "type": "Ethernet",
+      "number": "1/11",
+      "description": "Server-02 Connection",
+      "ip": "",
+      "mask": "",
+      "access_vlan": "100"
+    },
+    {
+      "type": "Ethernet",
+      "number": "1/48",
+      "description": "Trunk to ToR",
+      "ip": "",
+      "mask": "",
+      "is_trunk": true,
+      "trunk_vlans": "100,200,300"
+    },
+    {
+      "type": "Loopback",
+      "number": "0",
+      "description": "Router ID",
+      "ip": "10.255.1.1",
+      "mask": "255.255.255.255"
+    },
+    {
+      "type": "Loopback",
+      "number": "1",
+      "description": "VTEP Source",
+      "ip": "10.255.2.1",
+      "mask": "255.255.255.255"
+    }
+  ],
+  "vlans": "100,SERVERS\n200,DATABASE\n300,STORAGE\n999,NATIVE",
+  "acl": {
+    "name": "LEAF-PROTECT",
+    "type": "Extended",
+    "entries": [
+      {
+        "seq": "10",
+        "action": "permit",
+        "protocol": "tcp",
+        "source": "10.0.0.0",
+        "src_wildcard": "0.255.255.255",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "179",
+        "log": ""
+      },
+      {
+        "seq": "20",
+        "action": "permit",
+        "protocol": "icmp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "",
+        "log": ""
+      },
+      {
+        "seq": "100",
+        "action": "deny",
+        "protocol": "ip",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "",
+        "log": "log"
+      }
+    ]
+  },
+  "static_routes": "",
+  "ospf": {
+    "process_id": "UNDERLAY",
+    "router_id": "10.255.1.1",
+    "ref_bandwidth": "100000",
+    "networks": "10.0.1.0,0.0.0.255,0\n10.255.1.1,0.0.0.0,0\n10.255.2.1,0.0.0.0,0",
+    "passive_interfaces": "loopback0, loopback1"
+  },
+  "bgp": {
+    "local_as": "65101",
+    "router_id": "10.255.1.1",
+    "neighbors": [
+      {
+        "ip": "10.0.1.0",
+        "remote_as": "65001",
+        "description": "Spine-01",
+        "update_source": "Ethernet1/1",
+        "multihop": ""
+      },
+      {
+        "ip": "10.0.1.2",
+        "remote_as": "65001",
+        "description": "Spine-02",
+        "update_source": "Ethernet1/2",
+        "multihop": ""
+      }
+    ],
+    "networks": "10.255.1.1/32\n10.255.2.1/32"
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "version": "1.0",
+  "basic": {
+    "vendor": "SONiC",
+    "hostname": "sonic-tor-sw01",
+    "domain": "dc.example.com",
+    "enable_secret": "",
+    "dns_servers": "8.8.8.8, 8.8.4.4",
+    "ntp_servers": "pool.ntp.org, time.google.com"
+  },
+  "interfaces": [
+    {
+      "type": "Ethernet",
+      "number": "0",
+      "description": "Uplink to Spine-01",
+      "ip": "10.0.1.1",
+      "mask": "255.255.255.254"
+    },
+    {
+      "type": "Ethernet",
+      "number": "4",
+      "description": "Uplink to Spine-02",
+      "ip": "10.0.1.3",
+      "mask": "255.255.255.254"
+    },
+    {
+      "type": "Ethernet",
+      "number": "8",
+      "description": "Server-01",
+      "ip": "",
+      "mask": "",
+      "access_vlan": "100"
+    },
+    {
+      "type": "Ethernet",
+      "number": "12",
+      "description": "Server-02",
+      "ip": "",
+      "mask": "",
+      "access_vlan": "100"
+    },
+    {
+      "type": "Ethernet",
+      "number": "16",
+      "description": "Server-03",
+      "ip": "",
+      "mask": "",
+      "access_vlan": "200"
+    },
+    {
+      "type": "Loopback",
+      "number": "0",
+      "description": "Router ID",
+      "ip": "10.255.1.1",
+      "mask": "255.255.255.255"
+    }
+  ],
+  "vlans": "100,COMPUTE\n200,STORAGE\n300,MANAGEMENT",
+  "acl": {
+    "name": "TOR-INBOUND",
+    "type": "Extended",
+    "entries": [
+      {
+        "seq": "10",
+        "action": "permit",
+        "protocol": "tcp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "10.100.0.0",
+        "dst_wildcard": "0.0.255.255",
+        "dst_port": "443",
+        "log": ""
+      },
+      {
+        "seq": "20",
+        "action": "permit",
+        "protocol": "tcp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "10.100.0.0",
+        "dst_wildcard": "0.0.255.255",
+        "dst_port": "22",
+        "log": ""
+      },
+      {
+        "seq": "30",
+        "action": "permit",
+        "protocol": "tcp",
+        "source": "10.0.0.0",
+        "src_wildcard": "0.255.255.255",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "179",
+        "log": ""
+      },
+      {
+        "seq": "40",
+        "action": "permit",
+        "protocol": "icmp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "",
+        "log": ""
+      },
+      {
+        "seq": "100",
+        "action": "deny",
+        "protocol": "ip",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "",
+        "log": "log"
+      }
+    ]
+  },
+  "static_routes": "0.0.0.0,0.0.0.0,10.0.1.0\n192.168.0.0,255.255.0.0,10.0.1.2",
+  "ospf": {
+    "process_id": "",
+    "router_id": "",
+    "ref_bandwidth": "",
+    "networks": "",
+    "passive_interfaces": ""
+  },
+  "bgp": {
+    "local_as": "65101",
+    "router_id": "10.255.1.1",
+    "neighbors": [
+      {
+        "ip": "10.0.1.0",
+        "remote_as": "65001",
+        "description": "Spine-01",
+        "update_source": "10.0.1.1",
+        "multihop": ""
+      },
+      {
+        "ip": "10.0.1.2",
+        "remote_as": "65001",
+        "description": "Spine-02",
+        "update_source": "10.0.1.3",
+        "multihop": ""
+      }
+    ],
+    "networks": "10.255.1.1/32\n10.100.0.0/16"
+  }
+}

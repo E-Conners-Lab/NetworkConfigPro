@@ -472,6 +472,37 @@ class TestSONiCTemplate:
         assert "0.0.0.0/0" in config["STATIC_ROUTE"]
         assert config["STATIC_ROUTE"]["0.0.0.0/0"]["nexthop"] == "203.0.113.2"
 
+    def test_ospf_router_configuration(self, generator, full_config):
+        """Test OSPF_ROUTER section."""
+        full_config.vendor = Vendor.SONIC
+        output = generator.generate(full_config)
+        config = json.loads(output)
+
+        assert "OSPF_ROUTER" in config
+        assert "default" in config["OSPF_ROUTER"]
+        assert config["OSPF_ROUTER"]["default"]["router_id"] == "10.0.0.1"
+
+    def test_ospf_router_area_configuration(self, generator, full_config):
+        """Test OSPF_ROUTER_AREA section."""
+        full_config.vendor = Vendor.SONIC
+        output = generator.generate(full_config)
+        config = json.loads(output)
+
+        assert "OSPF_ROUTER_AREA" in config
+        # Area 0 should be present
+        assert "default|0.0.0.0" in config["OSPF_ROUTER_AREA"]
+
+    def test_ospf_interface_configuration(self, generator, full_config):
+        """Test OSPF_INTERFACE section."""
+        full_config.vendor = Vendor.SONIC
+        output = generator.generate(full_config)
+        config = json.loads(output)
+
+        assert "OSPF_INTERFACE" in config
+        # Check that interfaces have area assignments
+        for iface, iface_config in config["OSPF_INTERFACE"].items():
+            assert "area" in iface_config
+
     def test_bgp_neighbor_uses_rmt_asn(self, generator, full_config):
         """Test BGP_NEIGHBOR uses rmt_asn field."""
         full_config.vendor = Vendor.SONIC

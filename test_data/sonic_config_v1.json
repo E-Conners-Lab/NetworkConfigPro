@@ -1,0 +1,118 @@
+{
+    "DEVICE_METADATA": {
+        "localhost": {
+            "hostname": "dc1-spine-01",
+            "bgp_asn": "65100",
+            "type": "ToRRouter",
+            "synchronous_mode": "enable"
+        }
+    },
+    "PORT": {
+        "Ethernet0": {
+            "admin_status": "up",
+            "description": "Uplink to Core-01",
+            "mtu": "9100",
+            "speed": "100000"
+        },
+        "Ethernet4": {
+            "admin_status": "up",
+            "description": "Uplink to Core-02",
+            "mtu": "9100",
+            "speed": "100000"
+        },
+        "Ethernet8": {
+            "admin_status": "up",
+            "description": "To Leaf-01",
+            "mtu": "9100",
+            "speed": "40000"
+        },
+        "Ethernet12": {
+            "admin_status": "up",
+            "description": "To Leaf-02",
+            "mtu": "9100",
+            "speed": "40000"
+        }
+    },
+    "INTERFACE": {
+        "Ethernet0|10.1.0.1/31": {},
+        "Ethernet4|10.1.0.3/31": {},
+        "Ethernet8|10.1.1.0/31": {},
+        "Ethernet12|10.1.1.2/31": {}
+    },
+    "LOOPBACK_INTERFACE": {
+        "Loopback0|10.255.0.1/32": {}
+    },
+    "VLAN": {
+        "Vlan100": {
+            "vlanid": "100"
+        },
+        "Vlan200": {
+            "vlanid": "200"
+        },
+        "Vlan300": {
+            "vlanid": "300"
+        }
+    },
+    "BGP_NEIGHBOR": {
+        "10.1.0.0": {
+            "rmt_asn": "65000",
+            "name": "Core-01",
+            "holdtime": "180",
+            "keepalive": "60"
+        },
+        "10.1.0.2": {
+            "rmt_asn": "65000",
+            "name": "Core-02",
+            "holdtime": "180",
+            "keepalive": "60"
+        },
+        "10.1.1.1": {
+            "rmt_asn": "65101",
+            "name": "Leaf-01",
+            "holdtime": "180",
+            "keepalive": "60"
+        },
+        "10.1.1.3": {
+            "rmt_asn": "65102",
+            "name": "Leaf-02",
+            "holdtime": "180",
+            "keepalive": "60"
+        }
+    },
+    "ACL_TABLE": {
+        "MGMT-IN": {
+            "type": "L3",
+            "policy_desc": "Management Access Control",
+            "stage": "ingress",
+            "ports": ["Ethernet0", "Ethernet4"]
+        }
+    },
+    "ACL_RULE": {
+        "MGMT-IN|RULE_10": {
+            "PRIORITY": "9990",
+            "PACKET_ACTION": "FORWARD",
+            "IP_PROTOCOL": "6",
+            "SRC_IP": "10.0.0.0/8",
+            "L4_DST_PORT": "22"
+        },
+        "MGMT-IN|RULE_20": {
+            "PRIORITY": "9980",
+            "PACKET_ACTION": "FORWARD",
+            "IP_PROTOCOL": "6",
+            "SRC_IP": "10.0.0.0/8",
+            "L4_DST_PORT": "443"
+        },
+        "MGMT-IN|RULE_100": {
+            "PRIORITY": "9900",
+            "PACKET_ACTION": "DROP"
+        }
+    },
+    "NTP_SERVER": {
+        "10.0.0.10": {},
+        "10.0.0.11": {}
+    },
+    "DNS_NAMESERVER": {
+        "10.0.0.53": {},
+        "10.0.0.54": {}
+    }
+}

@@ -1,0 +1,30 @@
+!
+hostname CORE-SW-01
+!
+interface GigabitEthernet0/1
+ description Uplink to Router
+ ip address 192.168.1.2 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description Server Farm
+ ip address 10.10.10.1 255.255.255.0
+ no shutdown
+!
+interface Vlan10
+ description Management
+ ip address 192.168.10.1 255.255.255.0
+!
+vlan 10
+ name MANAGEMENT
+!
+vlan 20
+ name USERS
+!
+router ospf 1
+ network 192.168.1.0 0.0.0.255 area 0
+ network 10.10.10.0 0.0.0.255 area 0
+!
+ip route 0.0.0.0 0.0.0.0 192.168.1.1
+!
+end

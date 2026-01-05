@@ -1,0 +1,25 @@
+! Cisco IOS Configuration - Original
+hostname core-router-01
+!
+interface GigabitEthernet0/0
+ description WAN Uplink
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description LAN Segment
+ ip address 10.0.0.1 255.255.255.0
+ no shutdown
+!
+interface Loopback0
+ description Router ID
+ ip address 1.1.1.1 255.255.255.255
+!
+router ospf 1
+ router-id 1.1.1.1
+ network 192.168.1.0 0.0.0.255 area 0
+ network 10.0.0.0 0.0.0.255 area 0
+!
+ip route 0.0.0.0 0.0.0.0 192.168.1.254
+!
+end

@@ -82,6 +82,7 @@
 {% if vlan_interfaces %}{% set _ = ns.sections.append('VLAN_INTERFACE') %}{% endif %}
 
 {% if static_routes %}{% set _ = ns.sections.append('STATIC_ROUTE') %}{% endif %}
+{% if ospf %}{% set _ = ns.sections.append('OSPF_ROUTER') %}{% set _ = ns.sections.append('OSPF_ROUTER_AREA') %}{% set _ = ns.sections.append('OSPF_INTERFACE') %}{% endif %}
 {% if bgp and bgp.neighbors %}{% set _ = ns.sections.append('BGP_NEIGHBOR') %}{% endif %}
 {% if acls %}{% set _ = ns.sections.append('ACL_TABLE') %}{% set _ = ns.sections.append('ACL_RULE') %}{% endif %}
 {% if ntp_servers %}{% set _ = ns.sections.append('NTP_SERVER') %}{% endif %}
@@ -210,6 +211,41 @@
 
 {% endfor %}
     }{% if 'STATIC_ROUTE' != ns.sections[-1] %},{% endif %}
+
+{% endif %}
+{% if ospf %}
+    "OSPF_ROUTER": {
+        "default": {
+            "router_id": "{{ ospf.router_id if ospf.router_id else '0.0.0.0' }}"{% if ospf.reference_bandwidth != 100 %},
+            "reference_bandwidth": "{{ ospf.reference_bandwidth }}"{% endif %}{% if ospf.default_information_originate %},
+            "default_information_originate": "true"{% endif %}
+        }
+    }{% if 'OSPF_ROUTER' != ns.sections[-1] %},{% endif %}
+
+{# Collect unique areas #}
+{% set areas = [] %}
+{% for network in ospf.networks %}
+{% if network.area not in areas %}
+{% set _ = areas.append(network.area) %}
+{% endif %}
+{% endfor %}
+    "OSPF_ROUTER_AREA": {
+{% for area in areas %}
+        "default|{{ '0.0.0.%d' | format(area) if area < 256 else area }}": {}{% if not loop.last %},{% endif %}
+
+{% endfor %}
+    }{% if 'OSPF_ROUTER_AREA' != ns.sections[-1] %},{% endif %}
+
+    "OSPF_INTERFACE": {
+{% for network in ospf.networks %}
+{# Map network to interface - use network field as interface name for SONiC #}
+        "{{ network.network | sonic_interface_name }}": {
+            "area": "{{ '0.0.0.%d' | format(network.area) if network.area < 256 else network.area }}"{% if network.network in ospf.passive_interfaces %},
+            "passive": "true"{% endif %}
+        }{% if not loop.last %},{% endif %}
+
+{% endfor %}
+    }{% if 'OSPF_INTERFACE' != ns.sections[-1] %},{% endif %}
 
 {% endif %}
 {% if bgp and bgp.neighbors %}

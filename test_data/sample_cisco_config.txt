@@ -1,0 +1,91 @@
+!
+! Cisco IOS Configuration - Test Router
+!
+hostname TEST-ROUTER-01
+!
+enable secret 5 $1$abc$XYZ123456789
+!
+ip domain-name example.com
+ip name-server 8.8.8.8
+ip name-server 8.8.4.4
+!
+ntp server 10.0.0.1
+ntp server 10.0.0.2
+!
+interface GigabitEthernet0/0
+ description WAN Uplink to ISP
+ ip address 203.0.113.1 255.255.255.252
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description LAN Connection
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description DMZ Network
+ ip address 10.10.10.1 255.255.255.0
+ no shutdown
+!
+interface Loopback0
+ description Router ID
+ ip address 1.1.1.1 255.255.255.255
+!
+interface Vlan10
+ description Management VLAN
+ ip address 192.168.10.1 255.255.255.0
+!
+interface Vlan20
+ description User VLAN
+ ip address 192.168.20.1 255.255.255.0
+!
+vlan 10
+ name MANAGEMENT
+!
+vlan 20
+ name USERS
+!
+vlan 30
+ name SERVERS
+!
+vlan 99
+ name NATIVE
+!
+ip access-list extended BLOCK_TELNET
+ deny tcp any any eq 23
+ permit ip any any
+!
+ip access-list extended ALLOW_WEB
+ permit tcp any any eq 80
+ permit tcp any any eq 443
+ deny ip any any
+!
+router ospf 1
+ router-id 1.1.1.1
+ auto-cost reference-bandwidth 10000
+ network 192.168.1.0 0.0.0.255 area 0
+ network 192.168.10.0 0.0.0.255 area 0
+ network 192.168.20.0 0.0.0.255 area 0
+ passive-interface default
+ no passive-interface GigabitEthernet0/0
+!
+router bgp 65001
+ bgp router-id 1.1.1.1
+ neighbor 203.0.113.2 remote-as 65002
+ neighbor 203.0.113.2 description ISP_PEER
+ !
+ address-family ipv4 unicast
+  network 192.168.0.0 mask 255.255.0.0
+  neighbor 203.0.113.2 activate
+ exit-address-family
+!
+ip route 0.0.0.0 0.0.0.0 203.0.113.2
+ip route 10.20.0.0 255.255.0.0 192.168.1.254
+!
+line con 0
+ logging synchronous
+line vty 0 4
+ transport input ssh
+ login local
+!
+end

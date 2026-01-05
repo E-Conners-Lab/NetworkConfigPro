@@ -1,0 +1,114 @@
+{
+  "version": "1.0",
+  "basic": {
+    "vendor": "Cisco IOS/IOS-XE",
+    "hostname": "branch-router-01",
+    "domain": "branch.example.com",
+    "enable_secret": "SuperSecret123!",
+    "dns_servers": "8.8.8.8, 8.8.4.4, 1.1.1.1",
+    "ntp_servers": "pool.ntp.org, time.google.com"
+  },
+  "interfaces": [
+    {
+      "type": "GigabitEthernet",
+      "number": "0/0",
+      "description": "WAN to HQ",
+      "ip": "10.1.1.2",
+      "mask": "255.255.255.252"
+    },
+    {
+      "type": "GigabitEthernet",
+      "number": "0/1",
+      "description": "LAN Users",
+      "ip": "192.168.10.1",
+      "mask": "255.255.255.0"
+    },
+    {
+      "type": "GigabitEthernet",
+      "number": "0/2",
+      "description": "LAN Servers",
+      "ip": "192.168.20.1",
+      "mask": "255.255.255.0"
+    },
+    {
+      "type": "Loopback",
+      "number": "0",
+      "description": "Management",
+      "ip": "10.255.1.1",
+      "mask": "255.255.255.255"
+    }
+  ],
+  "vlans": "10,USERS\n20,SERVERS\n30,VOICE\n99,MANAGEMENT",
+  "acl": {
+    "name": "INTERNET-INBOUND",
+    "type": "Extended",
+    "entries": [
+      {
+        "seq": "10",
+        "action": "permit",
+        "protocol": "tcp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "192.168.20.0",
+        "dst_wildcard": "0.0.0.255",
+        "dst_port": "eq 443",
+        "log": ""
+      },
+      {
+        "seq": "20",
+        "action": "permit",
+        "protocol": "tcp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "192.168.20.0",
+        "dst_wildcard": "0.0.0.255",
+        "dst_port": "eq 80",
+        "log": ""
+      },
+      {
+        "seq": "30",
+        "action": "permit",
+        "protocol": "icmp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "",
+        "log": ""
+      },
+      {
+        "seq": "100",
+        "action": "deny",
+        "protocol": "ip",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "",
+        "log": "log"
+      }
+    ]
+  },
+  "static_routes": "0.0.0.0,0.0.0.0,10.1.1.1\n172.16.0.0,255.255.0.0,10.1.1.1",
+  "ospf": {
+    "process_id": "1",
+    "router_id": "10.255.1.1",
+    "ref_bandwidth": "10000",
+    "networks": "192.168.10.0,0.0.0.255,0\n192.168.20.0,0.0.0.255,0\n10.1.1.0,0.0.0.3,0",
+    "passive_interfaces": "GigabitEthernet0/1, GigabitEthernet0/2"
+  },
+  "bgp": {
+    "local_as": "65010",
+    "router_id": "10.255.1.1",
+    "neighbors": [
+      {
+        "ip": "10.1.1.1",
+        "remote_as": "65001",
+        "description": "iBGP to HQ",
+        "update_source": "Loopback0",
+        "multihop": "2"
+      }
+    ],
+    "networks": "192.168.10.0/24\n192.168.20.0/24"
+  }
+}

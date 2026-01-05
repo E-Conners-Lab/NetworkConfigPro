@@ -1,0 +1,45 @@
+!
+hostname CORE-SW-01-UPDATED
+!
+interface GigabitEthernet0/1
+ description Uplink to Core Router
+ ip address 192.168.1.2 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description Server Farm - Primary
+ ip address 10.10.10.1 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/3
+ description New DMZ Connection
+ ip address 172.16.0.1 255.255.255.0
+ no shutdown
+!
+interface Vlan10
+ description Management VLAN
+ ip address 192.168.10.1 255.255.255.0
+!
+interface Vlan30
+ description New Server VLAN
+ ip address 192.168.30.1 255.255.255.0
+!
+vlan 10
+ name MANAGEMENT
+!
+vlan 20
+ name USERS
+!
+vlan 30
+ name SERVERS
+!
+router ospf 1
+ network 192.168.1.0 0.0.0.255 area 0
+ network 10.10.10.0 0.0.0.255 area 0
+ network 172.16.0.0 0.0.0.255 area 1
+ network 192.168.30.0 0.0.0.255 area 0
+!
+ip route 0.0.0.0 0.0.0.0 192.168.1.1
+ip route 10.20.0.0 255.255.0.0 172.16.0.254
+!
+end

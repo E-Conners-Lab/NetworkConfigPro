@@ -1,0 +1,36 @@
+! Cisco IOS Configuration - Modified
+hostname core-router-01
+!
+interface GigabitEthernet0/0
+ description WAN Uplink to ISP
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description LAN Segment
+ ip address 10.0.0.1 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description New DMZ Interface
+ ip address 172.16.0.1 255.255.255.0
+ no shutdown
+!
+interface Loopback0
+ description Router ID
+ ip address 1.1.1.1 255.255.255.255
+!
+router ospf 1
+ router-id 1.1.1.1
+ network 192.168.1.0 0.0.0.255 area 0
+ network 10.0.0.0 0.0.0.255 area 0
+ network 172.16.0.0 0.0.0.255 area 1
+ passive-interface GigabitEthernet0/2
+!
+router bgp 65001
+ neighbor 192.168.1.254 remote-as 65000
+ network 10.0.0.0 mask 255.255.255.0
+!
+ip route 0.0.0.0 0.0.0.0 192.168.1.254
+!
+end

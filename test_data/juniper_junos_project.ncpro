@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "basic": {
+    "vendor": "Juniper Junos",
+    "hostname": "junos-edge-rtr01",
+    "domain": "edge.example.com",
+    "enable_secret": "JuniperSecure123!",
+    "dns_servers": "8.8.8.8, 8.8.4.4",
+    "ntp_servers": "pool.ntp.org"
+  },
+  "interfaces": [
+    {
+      "type": "GigabitEthernet",
+      "number": "0/0/0",
+      "description": "WAN to ISP-A",
+      "ip": "203.0.113.1",
+      "mask": "255.255.255.252"
+    },
+    {
+      "type": "GigabitEthernet",
+      "number": "0/0/1",
+      "description": "WAN to ISP-B",
+      "ip": "198.51.100.1",
+      "mask": "255.255.255.252"
+    },
+    {
+      "type": "TenGigabitEthernet",
+      "number": "0/0/0",
+      "description": "Core Network",
+      "ip": "10.0.0.1",
+      "mask": "255.255.255.252"
+    },
+    {
+      "type": "TenGigabitEthernet",
+      "number": "0/0/1",
+      "description": "DMZ Network",
+      "ip": "172.16.0.1",
+      "mask": "255.255.255.0"
+    },
+    {
+      "type": "Loopback",
+      "number": "0",
+      "description": "Router ID",
+      "ip": "10.255.255.1",
+      "mask": "255.255.255.255"
+    }
+  ],
+  "vlans": "100,EXTERNAL\n200,INTERNAL\n300,DMZ",
+  "acl": {
+    "name": "EDGE-FILTER",
+    "type": "Extended",
+    "entries": [
+      {
+        "seq": "10",
+        "action": "permit",
+        "protocol": "tcp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "172.16.0.0",
+        "dst_wildcard": "0.0.0.255",
+        "dst_port": "443",
+        "log": ""
+      },
+      {
+        "seq": "20",
+        "action": "permit",
+        "protocol": "tcp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "172.16.0.0",
+        "dst_wildcard": "0.0.0.255",
+        "dst_port": "80",
+        "log": ""
+      },
+      {
+        "seq": "30",
+        "action": "permit",
+        "protocol": "icmp",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "",
+        "log": ""
+      },
+      {
+        "seq": "100",
+        "action": "deny",
+        "protocol": "ip",
+        "source": "any",
+        "src_wildcard": "",
+        "destination": "any",
+        "dst_wildcard": "",
+        "dst_port": "",
+        "log": "log"
+      }
+    ]
+  },
+  "static_routes": "0.0.0.0,0.0.0.0,203.0.113.2",
+  "ospf": {
+    "process_id": "1",
+    "router_id": "10.255.255.1",
+    "ref_bandwidth": "100000",
+    "networks": "10.0.0.0,0.0.0.3,0\n172.16.0.0,0.0.0.255,0\n10.255.255.1,0.0.0.0,0",
+    "passive_interfaces": "ge-0/0/0, ge-0/0/1"
+  },
+  "bgp": {
+    "local_as": "65000",
+    "router_id": "10.255.255.1",
+    "neighbors": [
+      {
+        "ip": "203.0.113.2",
+        "remote_as": "64500",
+        "description": "ISP-A Upstream",
+        "update_source": "",
+        "multihop": ""
+      },
+      {
+        "ip": "198.51.100.2",
+        "remote_as": "64501",
+        "description": "ISP-B Upstream",
+        "update_source": "",
+        "multihop": ""
+      },
+      {
+        "ip": "10.0.0.2",
+        "remote_as": "65000",
+        "description": "iBGP to Core",
+        "update_source": "Loopback0",
+        "multihop": "2"
+      }
+    ],
+    "networks": "172.16.0.0/24"
+  }
+}

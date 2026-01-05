@@ -1,0 +1,85 @@
+
+
+
+
+
+
+
+
+
+
+{
+    "DEVICE_METADATA": {
+        "localhost": {
+            "hostname": "reference-device-01",
+            "bgp_asn": "65001",
+            "type": "ToRRouter",
+            "synchronous_mode": "enable"
+        }
+    },
+    "PORT": {
+        "Ethernet0": {
+            "admin_status": "up",
+            "description": "WAN Uplink",
+            "mtu": "9100"        },
+        "Ethernet1": {
+            "admin_status": "up",
+            "description": "LAN Segment",
+            "mtu": "9100"        }
+    },
+    "INTERFACE": {
+        "Ethernet0|203.0.113.1/30": {},
+        "Ethernet1|192.168.1.1/24": {}
+    },
+    "LOOPBACK_INTERFACE": {
+        "Loopback0|10.0.0.1/32": {}
+    },
+    "VLAN": {
+        "Vlan10": {
+            "vlanid": "10"
+        },
+        "Vlan20": {
+            "vlanid": "20"
+        }
+    },
+    "STATIC_ROUTE": {
+        "0.0.0.0/0": {
+            "nexthop": "203.0.113.2"        }
+    },
+    "BGP_NEIGHBOR": {
+        "203.0.113.2": {
+            "rmt_asn": "65000",
+            "name": "ISP",
+            "holdtime": "180",
+            "keepalive": "60"
+        }
+    },
+    "ACL_TABLE": {
+        "OUTSIDE-IN": {
+            "type": "L3",
+            "policy_desc": "OUTSIDE-IN",
+            "stage": "ingress",
+            "ports": [
+                "Ethernet0",
+                "Ethernet1"
+            ]        }
+    },
+    "ACL_RULE": {
+        "OUTSIDE-IN|RULE_10": {
+            "PRIORITY": "9990",
+            "PACKET_ACTION": "FORWARD",
+            "IP_PROTOCOL": "6",
+            "DST_IP": "192.168.1.0/24",
+            "L4_DST_PORT": "443"        },
+        "OUTSIDE-IN|RULE_100": {
+            "PRIORITY": "9900",
+            "PACKET_ACTION": "DROP"        }
+    },
+    "NTP_SERVER": {
+        "pool.ntp.org": {}
+    },
+    "DNS_NAMESERVER": {
+        "8.8.8.8": {},
+        "8.8.4.4": {}
+    }
+}

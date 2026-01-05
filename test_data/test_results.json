@@ -1,0 +1,141 @@
+{
+  "project": "NetConfigPro",
+  "test_date": "2026-01-05",
+  "summary": {
+    "total_tests": 199,
+    "passed": 199,
+    "failed": 0,
+    "pass_rate": 100.0,
+    "execution_time_seconds": 3.99
+  },
+  "vendors": [
+    {
+      "name": "Cisco IOS/IOS-XE",
+      "short_name": "Cisco IOS",
+      "tests_passed": 3,
+      "features": 10
+    },
+    {
+      "name": "Cisco NX-OS",
+      "short_name": "NX-OS",
+      "tests_passed": 2,
+      "features": 9
+    },
+    {
+      "name": "Arista EOS",
+      "short_name": "Arista",
+      "tests_passed": 2,
+      "features": 9
+    },
+    {
+      "name": "Juniper JunOS",
+      "short_name": "Juniper",
+      "tests_passed": 3,
+      "features": 7
+    },
+    {
+      "name": "SONiC",
+      "short_name": "SONiC",
+      "tests_passed": 11,
+      "features": 7
+    },
+    {
+      "name": "Fortinet FortiGate",
+      "short_name": "FortiGate",
+      "tests_passed": 8,
+      "features": 8
+    }
+  ],
+  "chart_data": {
+    "vendor_features": [
+      {
+        "vendor": "Cisco IOS",
+        "features": 10
+      },
+      {
+        "vendor": "Cisco NX-OS",
+        "features": 9
+      },
+      {
+        "vendor": "Arista EOS",
+        "features": 9
+      },
+      {
+        "vendor": "Juniper JunOS",
+        "features": 7
+      },
+      {
+        "vendor": "SONiC",
+        "features": 7
+      },
+      {
+        "vendor": "Fortinet FortiGate",
+        "features": 8
+      }
+    ],
+    "feature_support": [
+      {
+        "feature": "Interfaces",
+        "vendors": 6
+      },
+      {
+        "feature": "VLANs",
+        "vendors": 6
+      },
+      {
+        "feature": "Static Routes",
+        "vendors": 6
+      },
+      {
+        "feature": "BGP",
+        "vendors": 6
+      },
+      {
+        "feature": "OSPF",
+        "vendors": 5
+      },
+      {
+        "feature": "ACLs/Firewall",
+        "vendors": 6
+      },
+      {
+        "feature": "Route Maps",
+        "vendors": 5
+      },
+      {
+        "feature": "Prefix Lists",
+        "vendors": 5
+      }
+    ],
+    "test_breakdown": [
+      {
+        "category": "Template Tests",
+        "count": 53
+      },
+      {
+        "category": "Generator Tests",
+        "count": 15
+      },
+      {
+        "category": "Model Tests",
+        "count": 27
+      },
+      {
+        "category": "Parser Tests",
+        "count": 26
+      },
+      {
+        "category": "Validator Tests",
+        "count": 24
+      },
+      {
+        "category": "Vault Tests",
+        "count": 36
+      },
+      {
+        "category": "SONiC Tests",
+        "count": 18
+      }
+    ]
+  }
+}
