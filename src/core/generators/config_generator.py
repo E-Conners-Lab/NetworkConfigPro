@@ -38,6 +38,7 @@ class ConfigGenerator:
         self.env.filters["sonic_interface_name"] = self._sonic_interface_name
         self.env.filters["sonic_vlan_id"] = self._sonic_vlan_id
         self.env.filters["wildcard_to_cidr"] = self._wildcard_to_cidr
+        self.env.filters["sonic_port"] = self._sonic_port
 
     @staticmethod
     def _subnet_to_cidr(subnet_mask: str) -> int:
@@ -129,6 +130,7 @@ class ConfigGenerator:
             ("tengigabitethernet", "Ethernet"),
             ("gigabitethernet", "Ethernet"),
             ("fastethernet", "Ethernet"),
+            ("ethernet", "Ethernet"),  # Handle Ethernet0/0 -> Ethernet0
             ("loopback", "Loopback"),
             ("port-channel", "PortChannel"),
             ("portchannel", "PortChannel"),
@@ -215,6 +217,27 @@ class ConfigGenerator:
             pass
 
         return 32
+
+    @staticmethod
+    def _sonic_port(port: str) -> str:
+        """Strip 'eq ' prefix from port number for SONiC.
+
+        SONiC uses plain port numbers, not 'eq 443' syntax.
+
+        Args:
+            port: Port string (e.g., "eq 443" or "443")
+
+        Returns:
+            Plain port number (e.g., "443")
+        """
+        if port:
+            port = str(port).strip()
+            # Strip common IOS-style prefixes
+            for prefix in ["eq ", "neq ", "lt ", "gt ", "range "]:
+                if port.lower().startswith(prefix):
+                    port = port[len(prefix):].strip()
+                    break
+        return port
 
     def generate(self, config: DeviceConfig) -> str:
         """Generate configuration from a DeviceConfig object.

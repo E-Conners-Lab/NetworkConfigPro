@@ -96,12 +96,12 @@ def sample_sonic_json():
         },
         "BGP_NEIGHBOR": {
             "10.0.0.0": {
-                "asn": "65200",
+                "rmt_asn": "65200",
                 "name": "SPINE-01",
                 "local_addr": "10.0.0.1"
             },
             "10.0.0.2": {
-                "asn": "65200",
+                "rmt_asn": "65200",
                 "name": "SPINE-02"
             }
         },
@@ -232,7 +232,7 @@ class TestSONiCGenerator:
 
         assert "BGP_NEIGHBOR" in config
         assert "10.0.0.2" in config["BGP_NEIGHBOR"]
-        assert config["BGP_NEIGHBOR"]["10.0.0.2"]["asn"] == "65200"
+        assert config["BGP_NEIGHBOR"]["10.0.0.2"]["rmt_asn"] == "65200"
         assert config["BGP_NEIGHBOR"]["10.0.0.2"]["name"] == "SPINE-01"
 
     def test_generate_sonic_with_static_routes(self, generator, basic_sonic_config):
@@ -449,6 +449,12 @@ class TestSONiCFilters:
         result = generator._sonic_interface_name("Port-Channel1")
         assert result.startswith("PortChannel")
 
+    def test_sonic_interface_name_ethernet_slot_port(self, generator):
+        """Test converting Ethernet slot/port notation to SONiC flat numbering."""
+        assert generator._sonic_interface_name("Ethernet0/0") == "Ethernet0"
+        assert generator._sonic_interface_name("Ethernet0/1") == "Ethernet1"
+        assert generator._sonic_interface_name("Ethernet1/0") == "Ethernet48"
+
     def test_sonic_interface_name_already_sonic(self, generator):
         """Test that SONiC format names are unchanged."""
         assert generator._sonic_interface_name("Ethernet0") == "Ethernet0"
@@ -467,6 +473,15 @@ class TestSONiCFilters:
         assert generator._wildcard_to_cidr("0.0.0.255") == 24
         assert generator._wildcard_to_cidr("0.0.255.255") == 16
         assert generator._wildcard_to_cidr("0.255.255.255") == 8
+
+    def test_sonic_port_strips_eq(self, generator):
+        """Test stripping 'eq' prefix from port numbers for SONiC."""
+        assert generator._sonic_port("eq 443") == "443"
+        assert generator._sonic_port("eq 22") == "22"
+        assert generator._sonic_port("443") == "443"
+        assert generator._sonic_port("neq 80") == "80"
+        assert generator._sonic_port("lt 1024") == "1024"
+        assert generator._sonic_port("gt 1023") == "1023"
 
 
 class TestSONiCRoundTrip:

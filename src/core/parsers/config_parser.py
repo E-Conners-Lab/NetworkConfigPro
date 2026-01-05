@@ -1279,7 +1279,8 @@ class SONiCParser(BaseConfigParser):
                 continue
 
             try:
-                remote_as = int(neighbor_config.get("asn", 0))
+                # SONiC uses rmt_asn, but support asn for compatibility
+                remote_as = int(neighbor_config.get("rmt_asn", neighbor_config.get("asn", 0)))
             except ValueError:
                 continue
 

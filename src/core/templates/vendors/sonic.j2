@@ -99,10 +99,11 @@
 {% if port_list %}
     "PORT": {
 {% for iface in port_list %}
+{# SONiC defaults: mtu 9100 (jumbo frames), speed depends on platform #}
         "{{ iface.name | sonic_interface_name }}": {
             "admin_status": "{{ 'up' if iface.enabled else 'down' }}"{% if iface.description %},
-            "description": "{{ iface.description }}"{% endif %}{% if iface.mtu != 1500 %},
-            "mtu": "{{ iface.mtu }}"{% endif %}{% if iface.speed %},
+            "description": "{{ iface.description }}"{% endif %},
+            "mtu": "{{ iface.mtu if iface.mtu != 1500 else '9100' }}"{% if iface.speed %},
             "speed": "{{ iface.speed }}"{% endif %}
         }{% if not loop.last %},{% endif %}
 
@@ -214,9 +215,12 @@
 {% if bgp and bgp.neighbors %}
     "BGP_NEIGHBOR": {
 {% for neighbor in bgp.neighbors %}
+{# SONiC local_addr requires an IP address, not an interface name #}
+{# Check if update_source looks like an IP (starts with digit and has dots) #}
+{% set is_ip = neighbor.update_source and neighbor.update_source[0].isdigit() and '.' in neighbor.update_source %}
         "{{ neighbor.ip_address }}": {
-            "asn": "{{ neighbor.remote_as }}"{% if neighbor.description %},
-            "name": "{{ neighbor.description }}"{% endif %}{% if neighbor.update_source %},
+            "rmt_asn": "{{ neighbor.remote_as }}"{% if neighbor.description %},
+            "name": "{{ neighbor.description }}"{% endif %}{% if is_ip %},
             "local_addr": "{{ neighbor.update_source }}"{% endif %},
             "holdtime": "180",
             "keepalive": "60"
@@ -254,8 +258,8 @@
             "IP_PROTOCOL": "{{ '6' if entry.protocol.value == 'tcp' else '17' if entry.protocol.value == 'udp' else '1' if entry.protocol.value == 'icmp' else '' }}"{% endif %}{% if entry.source != 'any' %},
             "SRC_IP": "{{ entry.source }}/{{ entry.source_wildcard | wildcard_to_cidr }}"{% endif %}{% if entry.destination != 'any' %},
             "DST_IP": "{{ entry.destination }}/{{ entry.destination_wildcard | wildcard_to_cidr }}"{% endif %}{% if entry.source_port %},
-            "L4_SRC_PORT": "{{ entry.source_port }}"{% endif %}{% if entry.destination_port %},
-            "L4_DST_PORT": "{{ entry.destination_port }}"{% endif %}
+            "L4_SRC_PORT": "{{ entry.source_port | sonic_port }}"{% endif %}{% if entry.destination_port %},
+            "L4_DST_PORT": "{{ entry.destination_port | sonic_port }}"{% endif %}
         }{% if not loop.last %},{% endif %}
 
 {% endif %}
