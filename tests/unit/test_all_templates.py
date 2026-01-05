@@ -324,6 +324,82 @@ class TestJuniperJunOSTemplate:
         assert "lo0" in output
 
 
+class TestFortnetFortiGateTemplate:
+    """Tests for Fortinet FortiGate configuration generation."""
+
+    def test_generates_valid_config(self, generator, full_config):
+        """Test that Fortinet FortiGate generates a valid configuration."""
+        full_config.vendor = Vendor.FORTINET_FORTIGATE
+        output = generator.generate(full_config)
+
+        # Basic structure - FortiOS uses "config" blocks
+        assert "config system global" in output
+        assert 'set hostname "test-device-01"' in output
+
+    def test_interface_configuration(self, generator, full_config):
+        """Test interface configuration."""
+        full_config.vendor = Vendor.FORTINET_FORTIGATE
+        output = generator.generate(full_config)
+
+        assert "config system interface" in output
+        assert "set mode static" in output
+        assert "set status up" in output
+
+    def test_static_routes(self, generator, full_config):
+        """Test static route configuration."""
+        full_config.vendor = Vendor.FORTINET_FORTIGATE
+        output = generator.generate(full_config)
+
+        assert "config router static" in output
+        assert "set dst 0.0.0.0 0.0.0.0" in output
+        assert "set gateway 203.0.113.2" in output
+
+    def test_bgp_configuration(self, generator, full_config):
+        """Test BGP configuration."""
+        full_config.vendor = Vendor.FORTINET_FORTIGATE
+        output = generator.generate(full_config)
+
+        assert "config router bgp" in output
+        assert "set as 65001" in output
+        assert "config neighbor" in output
+        assert 'edit "203.0.113.2"' in output
+        assert "set remote-as 65000" in output
+
+    def test_dns_configuration(self, generator, full_config):
+        """Test DNS server configuration."""
+        full_config.vendor = Vendor.FORTINET_FORTIGATE
+        output = generator.generate(full_config)
+
+        assert "config system dns" in output
+        assert "set primary 8.8.8.8" in output
+        assert "set secondary 8.8.4.4" in output
+
+    def test_ntp_configuration(self, generator, full_config):
+        """Test NTP server configuration."""
+        full_config.vendor = Vendor.FORTINET_FORTIGATE
+        output = generator.generate(full_config)
+
+        assert "config system ntp" in output
+        assert "set ntpsync enable" in output
+        assert 'set server "pool.ntp.org"' in output
+
+    def test_firewall_policy_from_acl(self, generator, full_config):
+        """Test that ACLs are converted to firewall policies."""
+        full_config.vendor = Vendor.FORTINET_FORTIGATE
+        output = generator.generate(full_config)
+
+        assert "config firewall policy" in output
+        assert "set action accept" in output or "set action deny" in output
+
+    def test_vlan_configuration(self, generator, full_config):
+        """Test VLAN configuration."""
+        full_config.vendor = Vendor.FORTINET_FORTIGATE
+        output = generator.generate(full_config)
+
+        assert "set vlanid 10" in output
+        assert "set type vlan" in output
+
+
 class TestSONiCTemplate:
     """Tests for SONiC configuration generation."""
 
@@ -455,6 +531,7 @@ class TestAllVendorsBasicGeneration:
         Vendor.ARISTA_EOS,
         Vendor.JUNIPER_JUNOS,
         Vendor.SONIC,
+        Vendor.FORTINET_FORTIGATE,
     ])
     def test_vendor_generates_output(self, generator, full_config, vendor):
         """Test that each vendor generates non-empty output."""
@@ -470,6 +547,7 @@ class TestAllVendorsBasicGeneration:
         Vendor.ARISTA_EOS,
         Vendor.JUNIPER_JUNOS,
         Vendor.SONIC,
+        Vendor.FORTINET_FORTIGATE,
     ])
     def test_vendor_includes_hostname(self, generator, full_config, vendor):
         """Test that each vendor includes the hostname."""
@@ -485,6 +563,7 @@ class TestAllVendorsBasicGeneration:
         Vendor.ARISTA_EOS,
         Vendor.JUNIPER_JUNOS,
         Vendor.SONIC,
+        Vendor.FORTINET_FORTIGATE,
     ])
     def test_minimal_config_generates(self, generator, vendor):
         """Test that minimal config generates without error."""

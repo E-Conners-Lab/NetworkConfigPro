@@ -18,6 +18,7 @@ class ConfigGenerator:
         Vendor.ARISTA_EOS: "arista_eos.j2",
         Vendor.JUNIPER_JUNOS: "juniper_junos.j2",
         Vendor.SONIC: "sonic.j2",
+        Vendor.FORTINET_FORTIGATE: "fortinet_fortigate.j2",
     }
 
     def __init__(self):
@@ -39,6 +40,10 @@ class ConfigGenerator:
         self.env.filters["sonic_vlan_id"] = self._sonic_vlan_id
         self.env.filters["wildcard_to_cidr"] = self._wildcard_to_cidr
         self.env.filters["sonic_port"] = self._sonic_port
+        self.env.filters["fortinet_interface_name"] = self._fortinet_interface_name
+        self.env.filters["fortinet_parent_interface"] = self._fortinet_parent_interface
+        self.env.filters["fortinet_ospf_interface"] = self._fortinet_ospf_interface
+        self.env.filters["wildcard_to_netmask"] = self._wildcard_to_netmask
 
     @staticmethod
     def _subnet_to_cidr(subnet_mask: str) -> int:
@@ -238,6 +243,119 @@ class ConfigGenerator:
                     port = port[len(prefix):].strip()
                     break
         return port
+
+    @staticmethod
+    def _fortinet_interface_name(name: str) -> str:
+        """Convert interface name to FortiGate format.
+
+        Args:
+            name: Interface name (e.g., "GigabitEthernet0/0", "Ethernet1")
+
+        Returns:
+            FortiGate-style interface name (e.g., "port1", "wan1")
+        """
+        name_lower = name.lower()
+
+        # FortiGate uses port1, port2, wan1, wan2, internal, dmz, etc.
+        conversions = [
+            ("hundredgigabitethernet", "port"),
+            ("fortygigabitethernet", "port"),
+            ("tengigabitethernet", "port"),
+            ("gigabitethernet", "port"),
+            ("fastethernet", "port"),
+            ("ethernet", "port"),
+            ("loopback", "loopback"),
+            ("port-channel", "agg"),
+            ("portchannel", "agg"),
+            ("vlan", "vlan"),
+            ("management", "mgmt"),
+            ("mgmt", "mgmt"),
+        ]
+
+        for old, new in conversions:
+            if old in name_lower:
+                remainder = name_lower.replace(old, "").strip()
+                # Extract numeric portion
+                if "/" in remainder:
+                    parts = remainder.split("/")
+                    try:
+                        # FortiGate uses sequential port numbering
+                        port_num = int(parts[-1]) + 1  # FortiGate is 1-indexed
+                        return f"{new}{port_num}"
+                    except ValueError:
+                        return f"{new}{remainder.replace('/', '')}"
+                else:
+                    try:
+                        num = int(remainder)
+                        if new == "port":
+                            return f"{new}{num + 1}"  # FortiGate is 1-indexed
+                        return f"{new}{num}"
+                    except ValueError:
+                        return f"{new}{remainder}"
+
+        # Check if already in FortiGate format
+        if name.startswith("port") or name.startswith("wan") or \
+           name.startswith("internal") or name.startswith("dmz"):
+            return name
+
+        return name
+
+    @staticmethod
+    def _fortinet_parent_interface(name: str) -> str:
+        """Extract parent interface for VLAN sub-interfaces.
+
+        Args:
+            name: Interface name (e.g., "GigabitEthernet0/0.100")
+
+        Returns:
+            Parent interface name (e.g., "port1")
+        """
+        # If it contains a dot, it's a sub-interface
+        if "." in name:
+            parent = name.split(".")[0]
+            return ConfigGenerator._fortinet_interface_name(parent)
+        return "internal"  # Default parent interface
+
+    @staticmethod
+    def _fortinet_ospf_interface(network: str) -> str:
+        """Convert OSPF network to interface name.
+
+        FortiGate OSPF requires interface names, not networks.
+        This is a best-effort conversion.
+
+        Args:
+            network: Network address (e.g., "10.0.0.0")
+
+        Returns:
+            Interface name placeholder
+        """
+        # This would ideally be mapped from actual interface config
+        # For now, return a generic interface
+        return "port1"
+
+    @staticmethod
+    def _wildcard_to_netmask(wildcard: str) -> str:
+        """Convert wildcard mask to subnet mask.
+
+        Args:
+            wildcard: Wildcard mask (e.g., "0.0.0.255")
+
+        Returns:
+            Subnet mask (e.g., "255.255.255.0")
+        """
+        if not wildcard or wildcard == "0.0.0.0":
+            return "255.255.255.255"
+
+        try:
+            octets = wildcard.split(".")
+            if len(octets) == 4:
+                # Invert wildcard to get subnet mask
+                mask_octets = [255 - int(o) for o in octets]
+                return ".".join(str(o) for o in mask_octets)
+        except (ValueError, AttributeError):
+            pass
+
+        return "255.255.255.255"
 
     def generate(self, config: DeviceConfig) -> str:
         """Generate configuration from a DeviceConfig object.

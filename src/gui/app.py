@@ -72,6 +72,7 @@ class NetConfigProApp(QMainWindow):
         "Arista EOS": Vendor.ARISTA_EOS,
         "Juniper Junos": Vendor.JUNIPER_JUNOS,
         "SONiC": Vendor.SONIC,
+        "Fortinet FortiGate": Vendor.FORTINET_FORTIGATE,
     }
 
     # Interface type options for dropdown
@@ -294,6 +295,17 @@ class NetConfigProApp(QMainWindow):
             "VLAN": "Vlan",
             "Port-Channel": "PortChannel",
             "Management": "eth",
+        },
+        Vendor.FORTINET_FORTIGATE: {
+            "GigabitEthernet": "port",
+            "TenGigabitEthernet": "port",
+            "FortyGigabitEthernet": "port",
+            "HundredGigabitEthernet": "port",
+            "Ethernet": "port",
+            "Loopback": "loopback",
+            "VLAN": "vlan",
+            "Port-Channel": "agg",
+            "Management": "mgmt",
         },
     }
 

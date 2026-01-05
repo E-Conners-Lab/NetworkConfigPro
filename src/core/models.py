@@ -12,6 +12,7 @@ class Vendor(Enum):
     ARISTA_EOS = "arista_eos"
     JUNIPER_JUNOS = "juniper_junos"
     SONIC = "sonic"
+    FORTINET_FORTIGATE = "fortinet_fortigate"
 
 
 class InterfaceType(Enum):
