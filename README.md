@@ -4,7 +4,7 @@ A network configuration generator and validator for multi-vendor network devices
 
 ## Features
 
-- **Multi-vendor support**: Generate configurations for Cisco IOS/IOS-XE, NX-OS, Arista EOS, Juniper Junos, and SONiC
+- **Multi-vendor support**: Generate configurations for Cisco IOS/IOS-XE, NX-OS, Arista EOS, Juniper Junos, SONiC, and Fortinet FortiGate
 - **Configuration validation**: Catch errors and get best-practice recommendations before deployment
 - **Import & analyze**: Parse existing configurations and identify issues
 - **Configuration diff**: Compare two configurations side-by-side
@@ -36,7 +36,7 @@ python main.py
 ### Quick Start
 
 1. **Generate Configuration**
-   - Select your target vendor (Cisco IOS, NX-OS, Arista EOS, Juniper, SONiC)
+   - Select your target vendor (Cisco IOS, NX-OS, Arista EOS, Juniper, SONiC, Fortinet)
    - Fill in hostname, interfaces, VLANs, routing configuration
    - Click "Generate" or press `Ctrl+G`
    - Review validation results and export
@@ -57,14 +57,16 @@ python main.py
 
 ## Supported Vendors & Configuration Elements
 
-| Element | Cisco IOS | NX-OS | Arista EOS | Juniper | SONiC |
-|---------|-----------|-------|------------|---------|-------|
-| Interfaces | Yes | Yes | Yes | Yes | Yes |
-| VLANs | Yes | Yes | Yes | Yes | Yes |
-| ACLs | Yes | Yes | Yes | Yes | Yes |
-| Static Routes | Yes | Yes | Yes | Yes | Yes |
-| OSPF | Yes | Yes | Yes | Yes | - |
-| BGP | Yes | Yes | Yes | Yes | Yes |
+| Element | Cisco IOS | NX-OS | Arista EOS | Juniper | SONiC | FortiGate |
+|---------|-----------|-------|------------|---------|-------|-----------|
+| Interfaces | Yes | Yes | Yes | Yes | Yes | Yes |
+| VLANs | Yes | Yes | Yes | Yes | Yes | Yes |
+| ACLs/Firewall | Yes | Yes | Yes | Yes | Yes | Yes |
+| Static Routes | Yes | Yes | Yes | Yes | Yes | Yes |
+| OSPF | Yes | Yes | Yes | Yes | Yes | Yes |
+| BGP | Yes | Yes | Yes | Yes | Yes | Yes |
+| Route Maps | Yes | Yes | Yes | Yes | - | Yes |
+| Prefix Lists | Yes | Yes | Yes | Yes | - | Yes |
 
 ### SONiC Support
 
@@ -74,6 +76,7 @@ SONiC configurations are generated in `config_db.json` format with support for:
 - **PORT**: Interface configuration with MTU (default 9100)
 - **INTERFACE / LOOPBACK_INTERFACE**: L3 addressing
 - **VLAN / VLAN_MEMBER / VLAN_INTERFACE**: VLAN configuration
+- **OSPF_ROUTER / OSPF_ROUTER_AREA / OSPF_INTERFACE**: OSPF routing
 - **BGP_NEIGHBOR**: BGP peering with `rmt_asn` field format
 - **STATIC_ROUTE**: Static routing
 - **ACL_TABLE / ACL_RULE**: L3 ACLs
@@ -83,6 +86,24 @@ Interface naming is automatically converted:
 - `GigabitEthernet0/0` → `Ethernet0`
 - `Ethernet0/1` → `Ethernet1` (slot/port to flat numbering)
 - `Loopback0` → `Loopback0`
+
+### Fortinet FortiGate Support
+
+FortiGate configurations are generated in FortiOS CLI format with support for:
+
+- **config system global**: Hostname, FQDN
+- **config system interface**: Interface configuration with IP, status, MTU
+- **config system dns / ntp**: Management services
+- **config router static**: Static routing
+- **config router ospf**: OSPF with areas, interfaces, passive interfaces
+- **config router bgp**: BGP neighbors, networks, redistribution
+- **config router prefix-list / route-map**: Policy configuration
+- **config firewall address / policy**: ACL to firewall policy conversion
+
+Interface naming is automatically converted:
+- `GigabitEthernet0/0` → `port1`
+- `Ethernet1` → `port2` (1-indexed)
+- `Loopback0` → `loopback0`
 
 ## Project Structure
 
@@ -104,7 +125,8 @@ netconfigpro/
 │   │           ├── cisco_nxos.j2
 │   │           ├── arista_eos.j2
 │   │           ├── juniper_junos.j2
-│   │           └── sonic.j2
+│   │           ├── sonic.j2
+│   │           └── fortinet_fortigate.j2
 │   ├── security/            # Encryption, vault
 │   └── gui/                 # PySide6 GUI
 ├── tests/
